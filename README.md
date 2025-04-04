@@ -1,0 +1,4 @@
+- ImpTgsReq - GIUDA-like session impersonation. Requires elevated local privileges.
+- ImplantCryptor - cryptor with subsequent implant in-memory execution. I made it to bypass Defender for Sliver.
+- KeyStrokeMonitor - PoC keylogging shitcode.
+- PublishKrbCred - Pass-the-Ticket utility.
