@@ -1,4 +1,0 @@
-# https://clangd.llvm.org/faq
-CompileFlags:
-  Add: [-I/usr/lib/mingw64-toolchain/x86_64-w64-mingw32/include]
-  Compiler: /usr/lib/mingw64-toolchain/bin/x86_64-w64-mingw32-c++

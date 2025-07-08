@@ -1,15 +1,2 @@
-ImpTgsReq/obj/*
-ImpTgsReq/bin/*
-ImpTgsReq/Release/*
-ImpTgsReq/FodyWeavers.xsd
-PublishKrbCred/obj/*
-PublishKrbCred/bin/*
-PublishKrbCred/Release/*
-PublishKrbCred/FodyWeavers.xsd
-ImplantCryptor/obj/*
-ImplantCryptor/bin/*
-ImplantCryptor/Release/*
-ImplantCryptor/test/*
-ImplantCryptor/FodyWeavers.xsd
+DEV_README.md
 InvokeLocalNtlmFlow/*
-KeyStrokeMonitor/main.exe
