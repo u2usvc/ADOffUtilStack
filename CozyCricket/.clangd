@@ -1,0 +1,4 @@
+CompileFlags:
+  Add:
+    - -I/usr/lib/mingw64-toolchain/x86_64-w64-mingw32/include
+    - -I./build/vcpkg_installed/x64-mingw-static/include
