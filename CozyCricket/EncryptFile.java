@@ -33,9 +33,8 @@ public class EncryptFile {
 
     byte[] cipherText = cipher.doFinal(plaintext);
 
-    // Build output path: same dir, same basename + ".bin"
     String name = inPath.getFileName().toString();
-    Path outPath = inPath.resolveSibling(name + ".bin");
+    Path outPath = inPath.resolveSibling(name + ".enc");
 
     try (OutputStream os = Files.newOutputStream(outPath, StandardOpenOption.CREATE,
         StandardOpenOption.TRUNCATE_EXISTING)) {
