@@ -2,3 +2,4 @@ DEV_README.md
 InvokeLocalNtlmFlow/*
 **/*.exe
 **/build/
+**/.cache/
