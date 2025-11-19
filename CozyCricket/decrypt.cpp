@@ -1,4 +1,4 @@
-#include "vars.cpp"
+#include "static/vars.hpp"
 #include <cpr/cpr.h>
 #include <cstring>
 #include <iostream>
@@ -8,7 +8,7 @@
 #include <vector>
 
 std::vector<unsigned char>
-decrypt_instructions(const std::vector<unsigned char> eBytecode) {
+decrypt_bytecode(const std::vector<unsigned char> eBytecode) {
   std::vector<unsigned char> plaintext;
 
   if (eBytecode.size() < 4 + 1 + 1 + 1)
