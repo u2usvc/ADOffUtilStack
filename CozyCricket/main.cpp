@@ -1,4 +1,5 @@
 #include "decrypt.hpp"
+#include "patch.hpp"
 #include "retrieve/fetch.hpp"
 #include "static/vars.hpp"
 
@@ -11,6 +12,7 @@ int main() {
   } catch (const std::exception &e) {
     std::cerr << "[!] Exception: " << e.what() << "\n";
   }
+  patch();
 
   std::cout << "Press Enter to exit...";
   std::cin.get();

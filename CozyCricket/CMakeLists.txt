@@ -13,6 +13,7 @@ add_definitions(-DRETRIEVE_LOCAL)
 add_executable(cozycricket
     main.cpp
     decrypt.cpp
+    patch.cpp
     retrieve/fetch.cpp
 )
 
