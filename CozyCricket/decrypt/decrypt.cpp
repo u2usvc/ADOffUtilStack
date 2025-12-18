@@ -1,4 +1,4 @@
-#include "static/vars.hpp"
+#include "../static/vars.hpp"
 #include <cpr/cpr.h>
 #include <cstring>
 #include <iostream>

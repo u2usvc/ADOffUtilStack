@@ -1,5 +1,5 @@
-#include "decrypt.hpp"
-#include "patch.hpp"
+#include "decrypt/decrypt.hpp"
+#include "patch/patch.hpp"
 #include "retrieve/fetch.hpp"
 #include "static/vars.hpp"
 

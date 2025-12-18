@@ -12,8 +12,8 @@ add_definitions(-DRETRIEVE_LOCAL -DHASH_DJB2)
 
 add_executable(cozycricket
     main.cpp
-    decrypt.cpp
-    patch.cpp
+    decrypt/decrypt.cpp
+    patch/patch.cpp
     retrieve/fetch.cpp
     hash/hash.cpp
 )
