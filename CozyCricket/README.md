@@ -68,3 +68,18 @@ sed -i "1s/^/#include \"bytecode.hpp\"\n/" static/bytecode.cpp
 ## Development
 
 Take a look at `.clangd` file and how it defines paths to libraries. Make sure you launch your IDE with the CozyCricket directory being the root of the project.
+
+### Adding functionality
+
+- add `func.cpp` (optionally include conditional compilation macros)
+- add `func.hpp`
+- edit `add_executable` (and `add_definitions` if you added `#ifdef` blocks) within `CMakeLists.txt`
+- regenerate build files via `cmake`
+
+### Using hash functions
+
+This project implements API/DLL hashing functionality. If you wish to hash your own string please consider using the built-in hash function of interest. After enabling the required compilation flags for the appropriate hashing function you can do something like this:
+
+```cpp
+std::cout << hash((const char*)"C:\\Windows\\SYSTEM32\\ntdll.dll") << std::endl;
+```
