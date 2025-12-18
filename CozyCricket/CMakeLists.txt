@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### ----- START CHANGEME -----
-add_definitions(-DRETRIEVE_LOCAL -DHASH_DJB2)
+add_definitions(-DRETRIEVE_LOCAL -DHASH_DJB2 -DRESOLVEDLL_TIB)
 ### ----- END CHANGEME -----
 
 add_executable(cozycricket
@@ -16,6 +16,7 @@ add_executable(cozycricket
     patch/patch.cpp
     retrieve/fetch.cpp
     hash/hash.cpp
+    resolve/resolve_dll.cpp
 )
 
 find_package(OpenSSL REQUIRED)
