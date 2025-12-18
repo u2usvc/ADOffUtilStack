@@ -3,7 +3,7 @@
 #include <windows.h>
 
 DWORD64 hash(const char *str) {
-  DWORD64 dwHash = 0x7734773477347734;
+  DWORD64 dwHash = 0x6623662366236623;
   int c;
 
   while (c = *str++)
