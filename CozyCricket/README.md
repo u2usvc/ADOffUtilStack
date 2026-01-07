@@ -3,6 +3,7 @@
 ```bash
 # install mingw
 sudo apt install mingw-w64
+sudo apt install nasm
 
 # install vcpkg
 git clone https://github.com/microsoft/vcpkg.git
@@ -83,3 +84,37 @@ This project implements API/DLL hashing functionality. If you wish to hash your 
 ```cpp
 std::cout << hash((const char*)"C:\\Windows\\SYSTEM32\\ntdll.dll") << std::endl;
 ```
+
+### Adding WinAPI calls
+
+```asm
+section .text
+
+global sysNtOpenProcess
+sysNtOpenProcess:
+    mov r10, rcx
+    mov ax, word [SSN]
+    jmp qword [rel syscallAddr]
+    ret
+```
+
+```cpp
+EXTERN_C NTSTATUS NTAPI sysNtOpenProcess(
+    PHANDLE,
+    ACCESS_MASK,
+    POBJECT_ATTRIBUTES,
+    PCLIENT_ID
+);
+
+NTSTATUS status = call(
+    hashNtdll,
+    hashNtOpenProcess,
+    sysNtOpenProcess,
+    &hParentProcess,
+    PROCESS_CREATE_PROCESS,
+    &pObjectAttributes,
+    &pClientId
+);
+```
+
+
