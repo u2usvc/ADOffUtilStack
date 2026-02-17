@@ -2,6 +2,15 @@
 #include <subauth.h>
 #include <winnt.h>
 
+#define InitializeObjectAttributes( p, n, a, r, s ) { \
+(p)->Length = sizeof( OBJECT_ATTRIBUTES );        \
+(p)->RootDirectory = r;                           \
+(p)->Attributes = a;                              \
+(p)->ObjectName = n;                              \
+(p)->SecurityDescriptor = s;                      \
+(p)->SecurityQualityOfService = NULL;             \
+}
+
 // unfortunately, some structures (like InLoadOrderLinks) are not exposed by
 // standard windows headers. I have to redefine the following types
 typedef struct _PEB_LDR_DATA {
@@ -147,3 +156,17 @@ typedef struct _TEB {
   PVOID Reserved6[4];
   PVOID TlsExpansionSlots;
 } TEB, *PTEB;
+
+typedef struct _CLIENT_ID {
+	PVOID UniqueProcess;
+	PVOID UniqueThread;
+} CLIENT_ID, * PCLIENT_ID;
+
+typedef struct _OBJECT_ATTRIBUTES {
+	ULONG Length;
+	HANDLE RootDirectory;
+	PUNICODE_STRING ObjectName;
+	ULONG Attributes;
+	PVOID SecurityDescriptor;
+	PVOID SecurityQualityOfService;
+} OBJECT_ATTRIBUTES, * POBJECT_ATTRIBUTES;

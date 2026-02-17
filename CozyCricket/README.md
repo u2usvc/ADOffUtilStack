@@ -1,3 +1,16 @@
+## About
+
+### Flags
+
+- RETRIEVE_FETCH: fetch shellcode from remote server
+- RETRIEVE_LOCAL: embed shellcode into the binary
+- HASH_DJB2: use DJB2 for API/DLL hashing
+- RESOLVEDLL_TIB: resolve DLL manually
+- RESOLVEAPI_DOS: resolve WINAPI manually
+- SYSCALL_INDIRECT: indirect syscalls
+- GETSYSCALL_SORT_TARTARUS: TartarusGate
+- INJECT_EXTERNAL_EBAPC: Early bird APC injection with PPID spoofing
+
 ## Build
 
 ```bash
@@ -34,6 +47,14 @@ cmake --build build --config Release -j
 ```
 
 ## Adjust
+
+### Encrypt string
+
+```bash
+printf "kernel32\x00" > win32.bin
+java EncryptFile.java ./win32.bin 'dsfjdshjfdsfdsfdsfydsgfydsgfuygdsifgdsiugfidsgfigdsu'
+xxd -n eKernel32Dll -i win32.bin.enc
+```
 
 ### Shellcode retrieval
 

