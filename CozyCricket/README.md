@@ -106,6 +106,17 @@ This project implements API/DLL hashing functionality. If you wish to hash your 
 std::cout << hash((const char*)"C:\\Windows\\SYSTEM32\\ntdll.dll") << std::endl;
 ```
 
+You can also use a python script included in the root of the project
+
+```bash
+python3 djb2.py "C:\\Windows\\SYSTEM32\\ntdll.dll"
+# 3579829573855646769
+
+python3 djb2.py "NtWriteVirtualMemory"
+# 13414142115590362032
+```
+
+
 ### Adding WinAPI calls
 
 ```asm
