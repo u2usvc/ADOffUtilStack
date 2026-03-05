@@ -3,11 +3,15 @@
 #include <windows.h>
 #include "../hash/hash.hpp"
 #include <iostream>
+#include "../static/debug.hpp"
 
 // ==========================================
 // DOS -> e_lfanew -> IMAGE_NT_HEADERS -> OptionalHeader[x] -> VirtualAddress => IMAGE_EXPORT_DIRECTORY -> AddressOfNames => `ApiSetQueryApiSetPresence`
 // ==========================================
 LPVOID resolve_api(HMODULE dllBase, DWORD64 apiHash) {
+
+  DEBUG_VERBOSE("Starting to resolve WINAPI method for hash: %llu", apiHash);
+
   // identical to
   // https://github.com/reveng007/DarkWidow/blob/main/src/indirect.cpp#L120
 
@@ -35,7 +39,7 @@ LPVOID resolve_api(HMODULE dllBase, DWORD64 apiHash) {
   //    +0x028 e_res2           : [10] 0␍
   //    +0x03c e_lfanew         : 0n216
   IMAGE_DOS_HEADER* DOS_HEADER = (IMAGE_DOS_HEADER*)dllBase;
-  std::cout << "[+] DLL base (DOS header): " << dllBase << "\n";
+  DEBUG_TRACE("DLL base (DOS header): %p", dllBase);
 
   // 0:003> ? 0x7ffc35400000 + 0n216␍
   // Evaluate expression: 140721201873112 = 00007ffc`354000d8
@@ -46,7 +50,7 @@ LPVOID resolve_api(HMODULE dllBase, DWORD64 apiHash) {
   //    +0x004 FileHeader       : _IMAGE_FILE_HEADER␍
   //    +0x018 OptionalHeader   : _IMAGE_OPTIONAL_HEADER64
   IMAGE_NT_HEADERS* NT_HEADER = (IMAGE_NT_HEADERS*)((LPBYTE)dllBase + DOS_HEADER->e_lfanew);
-  std::cout << "[+] NT Header: " << NT_HEADER << "\n";
+  DEBUG_TRACE("NT Header: %p", NT_HEADER);
 
   // 0:003> dt nt!_IMAGE_OPTIONAL_HEADER64 00007ffc`354000d8␍
   // ntdll!_IMAGE_OPTIONAL_HEADER64␍
@@ -106,7 +110,7 @@ LPVOID resolve_api(HMODULE dllBase, DWORD64 apiHash) {
   //    +0x000 VirtualAddress   : 0x14c470␍
   //    +0x004 Size             : 0x1276a
   PIMAGE_EXPORT_DIRECTORY EXdir = (PIMAGE_EXPORT_DIRECTORY)((LPBYTE)dllBase + NT_HEADER->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
-  std::cout << "[+] NT header -> IMAGE_NT_HEADERS -> OptionalHeader[x] -> VirtualAddress => IMAGE_EXPORT_DIRECTORY: " << EXdir << "\n";
+  DEBUG_TRACE("NT header -> IMAGE_NT_HEADERS -> OptionalHeader[x] -> VirtualAddress => IMAGE_EXPORT_DIRECTORY: %p", EXdir);
 
   // 0:003> ? 0x7ffc35400000 + 0x14c470␍
   // Evaluate expression: 140721203233904 = 00007ffc`3554c470
@@ -166,8 +170,8 @@ LPVOID resolve_api(HMODULE dllBase, DWORD64 apiHash) {
   PDWORD fAddr = (PDWORD)((LPBYTE)dllBase + EXdir->AddressOfFunctions);
 	PDWORD fNames = (PDWORD)((LPBYTE)dllBase + EXdir->AddressOfNames);
 	PWORD  fOrdinals = (PWORD)((LPBYTE)dllBase + EXdir->AddressOfNameOrdinals);
-  std::cout << "[+] Got addresses of AddressOfFunctions, AddressOfNames, AddressOfNameOrdinals structures\n";
-  std::cout << "[+] Traversing through AddressOfNames and comparing hashes\n";
+  DEBUG_TRACE("Got addresses of AddressOfFunctions, AddressOfNames, AddressOfNameOrdinals structures");
+  DEBUG_TRACE("Traversing through AddressOfNames and comparing hashes");
 
   // for each byte in AddressOfFunctions
   // we conduct API hashing for the corresponding function name
@@ -182,9 +186,9 @@ LPVOID resolve_api(HMODULE dllBase, DWORD64 apiHash) {
     if (calculatedHash == apiHash)
     {
       LPVOID baseFuncAddr = (LPVOID)((LPBYTE)dllBase + fAddr[fOrdinals[i]]);
-      std::cout << "[+] Found match on ordinal " << fOrdinals[i] << "\n";
-      std::cout << "[+] Function name: " << pFuncName << "\n";
-      std::cout << "[+] Function address: " << baseFuncAddr << "\n";
+      DEBUG_TRACE("Found match on ordinal %hu", fOrdinals[i]);
+      DEBUG_VERBOSE("Resolved function with name: %p", pFuncName);
+      DEBUG_TRACE("Function address: %p", baseFuncAddr);
       return baseFuncAddr;
     }
   }

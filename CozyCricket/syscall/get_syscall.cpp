@@ -6,10 +6,12 @@
 
 #include <iostream>
 #include <windows.h>
+#include "../static/debug.hpp"
 
 WORD GetSyscallNum(LPVOID ntapiaddr)
 {
-  std::cout << "[+] starting SSN sort on the function address: " << ntapiaddr << "\n";
+  DEBUG_VERBOSE("starting SSN sort on the function address: %p", ntapiaddr);
+
 	WORD SystemCall = NULL;
 
 	// Whole SystemCall Stub:
@@ -27,7 +29,7 @@ WORD GetSyscallNum(LPVOID ntapiaddr)
 		BYTE low = *((PBYTE)ntapiaddr + 4);
 		SystemCall = (high << 8) | low;
 
-    std::cout << "[+] got clean SSN: " << SystemCall << "\n";
+    DEBUG_VERBOSE("got clean SSN: %hu", SystemCall);
 
 		return SystemCall;
 	}
@@ -65,7 +67,7 @@ WORD GetSyscallNum(LPVOID ntapiaddr)
 				BYTE low = *((PBYTE)ntapiaddr + 4 + idx * DOWN);
 				SystemCall = (high << 8) | low - idx;
 
-        std::cout << "[+] [neighbouring: DOWN] SSN: " << SystemCall << "\n";
+        DEBUG_TRACE("[neighbouring: DOWN] SSN: %p", SystemCall);
 
 				return SystemCall;
 			}
@@ -82,7 +84,7 @@ WORD GetSyscallNum(LPVOID ntapiaddr)
 				BYTE low = *((PBYTE)ntapiaddr + 4 + idx * UP);
 				SystemCall = (high << 8) | low + idx;
 
-        std::cout << "[+] [neighbouring: UP] SSN: " << SystemCall << "\n";
+        DEBUG_TRACE("[neighbouring: UP] SSN: %p", SystemCall);
 
 				return SystemCall;
 			}
@@ -93,7 +95,7 @@ WORD GetSyscallNum(LPVOID ntapiaddr)
 // Sektor7: HalosGate -> hellsgate.asm
 DWORD64 GetSyscallAddr(LPVOID ntapiaddr)
 {
-  std::cout << "[+] Trying to get a clean address (*gate) from the function address: " << ntapiaddr << "\n";
+  DEBUG_VERBOSE("Trying to get a clean address (*gate) from the function address: %p", ntapiaddr);
 	WORD SystemCall = NULL;
 
 	if (*((PBYTE)ntapiaddr) == 0x4c
@@ -105,7 +107,7 @@ DWORD64 GetSyscallAddr(LPVOID ntapiaddr)
 	{
 		// https://github.com/reveng007/MaldevTechniques/tree/main/3.Evasions/SSN_Sort_patch_Hooked_syscalls/project_vs_2022#to-get-syscall-instuction-calculation
     INT_PTR addr = (INT_PTR)ntapiaddr + 0x12;
-    std::cout << "[+] got clean address: " << addr << "\n";
+    DEBUG_VERBOSE("got clean address: %p", addr);
 		return addr;
 	}
 
@@ -138,7 +140,7 @@ DWORD64 GetSyscallAddr(LPVOID ntapiaddr)
 				&& *((PBYTE)ntapiaddr + 7 + idx * DOWN) == 0x00)
 			{
         INT_PTR addr = (INT_PTR)ntapiaddr + 0x12;
-        std::cout << "[+] got clean address: " << addr << "\n";
+        DEBUG_VERBOSE("got clean address: %p", addr);
         return addr;
 			}
 
@@ -151,7 +153,7 @@ DWORD64 GetSyscallAddr(LPVOID ntapiaddr)
 				&& *((PBYTE)ntapiaddr + 7 + idx * UP) == 0x00)
 			{
         INT_PTR addr = (INT_PTR)ntapiaddr + 0x12;
-        std::cout << "[+] got clean address: " << addr << "\n";
+        DEBUG_VERBOSE("got clean address: %p", addr);
         return addr;
 			}
 		}

@@ -5,10 +5,13 @@
 #include <iostream>
 #include <windows.h>
 #include "../helpers.cpp"
+#include "../static/debug.hpp"
 
 HMODULE resolve_dll(DWORD64 dllHash) {
   // identical to
   // https://github.com/reveng007/DarkWidow/blob/main/src/indirect.cpp#L196
+
+  DEBUG_VERBOSE("Starting to resolve DLL with hash %llu", dllHash);
 
   PNT_TIB pTIB = NULL;
   PTEB pTEB = NULL;
@@ -55,12 +58,12 @@ HMODULE resolve_dll(DWORD64 dllHash) {
   //    +0x060 ProcessEnvironmentBlock : 0x000000b0`f035d000 _PEB
 
   if (pPEB == NULL) {
-    std::cout << "[X] failed to get PEB\n";
+    DEBUG_ERR("Failed to get PEB");
     return NULL;
   }
 
-  std::cout << "[+] TEB base: " << pTIB << "\n";
-  std::cout << "[+] PEB base: " << pPEB << "\n";
+  DEBUG_TRACE("TEB base: %p", pTIB);
+  DEBUG_TRACE("PEB base: %p", pPEB);
 
   // {https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-peb}
   // typedef struct _PEB {
@@ -128,8 +131,8 @@ HMODULE resolve_dll(DWORD64 dllHash) {
   //    +0x100 LoadTime         : _LARGE_INTEGER 0x01dc709b`dfe466e2␍
   //    +0x108 BaseNameHashValue : 0x80e41c03␍
 
-  std::cout << "[+] PEB.Ldr.InLoadOrderModuleList: " << ListHead << "\n";
-  std::cout << "[+] InLoadOrderModuleList.Flink: " << ListEntry << "\n";
+  DEBUG_TRACE("PEB.Ldr.InLoadOrderModuleList: %p", ListHead);
+  DEBUG_TRACE("InLoadOrderModuleList.Flink: %p", ListEntry);
   // ==============================================
   // retrieved InLoadOrderModuleList successfully
   // ==============================================
@@ -144,25 +147,25 @@ HMODULE resolve_dll(DWORD64 dllHash) {
     //  0:003> dt _LDR_DATA_TABLE_ENTRY 0x000001d4`685428d0 InLoadOrderLinks␍
     //ntdll!_LDR_DATA_TABLE_ENTRY␍
     //   +0x000 InLoadOrderLinks : _LIST_ENTRY [ 0x000001d4`68543150 - 0x000001d4`68542aa0 ]
-    std::cout << "[+] InLoadOrderModuleList.Flink.InLoadOrderLinks: " << LdrEntry << "\n";
+    DEBUG_TRACE("InLoadOrderModuleList.Flink.InLoadOrderLinks: %p", LdrEntry);
 
     // Loading loaded DllBase Address from:
     // Loader Data Table Entry (LDR_DATA_TABLE_ENTRY struture) -> present in
     // ntapi.h file
     UNICODE_STRING BaseDllName = (LdrEntry->FullDllName);
-    std::cout << "[+] InLoadOrderModuleList.Flink.InLoadOrderLinks.FullDllName: " << PWSTR_to_Char(BaseDllName.Buffer) << "\n";
+    DEBUG_TRACE("InLoadOrderModuleList.Flink.InLoadOrderLinks.FullDllName: %p", PWSTR_to_Char(BaseDllName.Buffer));
     HMODULE DllBase = (HMODULE)(LdrEntry->DllBase);
-    std::cout << "[+] InLoadOrderModuleList.Flink.InLoadOrderLinks.DllBase: " << DllBase << "\n";
+    DEBUG_TRACE("InLoadOrderModuleList.Flink.InLoadOrderLinks.DllBase: %p", DllBase);
 
     // ================================== Checking Passed API hash
     // DWORD64 retrievedhash = create_hash(BaseDllName.Buffer);
     const char *Dllname = PWSTR_to_Char(BaseDllName.Buffer);
     DWORD64 retrievedhash = hash(Dllname);
-    std::cout << "[+] Retrieved hash: " << retrievedhash << "\n";
-    std::cout << "[+] Dll hash: " << dllHash << "\n";
+    DEBUG_TRACE("Retrieved hash: %llu", retrievedhash);
+    DEBUG_TRACE("Dll hash: %llu", dllHash);
 
     if (retrievedhash == dllHash) {
-      std::cout << "[!] DLL resolved\n";
+      DEBUG_VERBOSE("Dll resolved");
       // printf("BaseDllName: %ws (addr: %p)\n\n", BaseDllName.Buffer, DllBase);
       return DllBase;
     }
