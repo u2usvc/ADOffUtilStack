@@ -2,14 +2,14 @@
 
 ### Flags
 
-- RETRIEVE_FETCH: fetch shellcode from remote server
-- RETRIEVE_LOCAL: embed shellcode into the binary
-- HASH_DJB2: use DJB2 for API/DLL hashing
-- RESOLVEDLL_TIB: resolve DLL manually
-- RESOLVEAPI_DOS: resolve WINAPI manually
-- SYSCALL_INDIRECT: indirect syscalls
-- GETSYSCALL_SORT_TARTARUS: TartarusGate
-- INJECT_EXTERNAL_EBAPC: Early bird APC injection with PPID spoofing
+- `RETRIEVE_FETCH`: fetch shellcode from remote server
+- `RETRIEVE_LOCAL`: embed shellcode into the binary
+- `HASH_DJB2`: use DJB2 for API/DLL hashing
+- `RESOLVEDLL_TIB`: resolve DLL manually
+- `RESOLVEAPI_DOS`: resolve WINAPI manually
+- `SYSCALL_INDIRECT`: indirect syscalls
+- `GETSYSCALL_SORT_TARTARUS`: TartarusGate
+- `INJECT_EXTERNAL_EBAPC`: Early bird APC injection with PPID spoofing
 
 ## Build
 
@@ -91,11 +91,12 @@ sed -i "1s/^/#include \"bytecode.hpp\"\n/" static/bytecode.cpp
 
 Take a look at `.clangd` file and how it defines paths to libraries. Make sure you launch your IDE with the CozyCricket directory being the root of the project.
 
-### Adding functionality
+### Adding implementations with SYSCALL_INDIRECT
 
-- add `func.cpp` (optionally include conditional compilation macros)
-- add `func.hpp`
-- edit `add_executable` (and `add_definitions` if you added `#ifdef` blocks) within `CMakeLists.txt`
+1. Add required function definitions to `syscall/syscalls.asm`
+2. Declare functions in via `EXTERN_C`
+3. Add an implementation by appending `#elifdef` directive where needed according to a corresponding interface definition in .hpp or add a new file optionally including conditional compilation directives
+- edit `add_executable` (and `add_definitions` if you added `#*ifdef` blocks) within `CMakeLists.txt`
 - regenerate build files via `cmake`
 
 ### Using hash functions
@@ -115,7 +116,6 @@ python3 djb2.py "C:\\Windows\\SYSTEM32\\ntdll.dll"
 python3 djb2.py "NtWriteVirtualMemory"
 # 13414142115590362032
 ```
-
 
 ### Adding WinAPI calls
 
@@ -148,5 +148,4 @@ NTSTATUS status = call(
     &pClientId
 );
 ```
-
 
