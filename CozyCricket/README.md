@@ -2,14 +2,39 @@
 
 ### Flags
 
+#### Payload fetch
+
 - `RETRIEVE_FETCH`: fetch shellcode from remote server
 - `RETRIEVE_LOCAL`: embed shellcode into the binary
+
+#### Hash
+
 - `HASH_DJB2`: use DJB2 for API/DLL hashing
+
+#### Resolve library
+
 - `RESOLVEDLL_TIB`: resolve DLL manually
+
+#### Resolve WINAPI
+
 - `RESOLVEAPI_DOS`: resolve WINAPI manually
+
+#### Syscall
+
 - `SYSCALL_INDIRECT`: indirect syscalls
+
+#### PID search
+
+- `FINDPID_GETNEXTPROCESS`: PID search via `NtGetNextProcess`,`GetProcessImageFileNameA`
+
+#### SSN sort
+
 - `GETSYSCALL_SORT_TARTARUS`: TartarusGate
+
+#### Process injection
+
 - `INJECT_EXTERNAL_EBAPC`: Early bird APC injection with PPID spoofing
+- `INJECT_EXTERNAL_CREATE_MAP_SECTION`: Injection via `NtCreateSection`,`NtMapViewOfSection`
 
 ## Build
 

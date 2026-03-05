@@ -17,16 +17,6 @@ EXTERN_C NTSTATUS sysNtGetNextProcess(
   PHANDLE NewProcessHandle
 );
 
-// EXTERN_C LPCSTR sysPathFindFileNameA(
-//   LPCSTR pszPath
-// );
-//
-// EXTERN_C DWORD sysGetProcessImageFileNameA(
-//   HANDLE hProcess,
-//   LPSTR  lpImageFileName,
-//   DWORD  nSize
-// );
-
 DWORD findProcessId(std::string processName) {
   DEBUG_INFO("Starting NtGetNextProcess enumeration. Looking for: %s", processName.c_str());
 
@@ -55,15 +45,6 @@ DWORD findProcessId(std::string processName) {
       procName,
       MAX_PATH
     );
-    // DWORD nameLength = call(
-    //   hashNtDll,
-    //   hashGetProcessImageFileNameA,
-    //   sysGetProcessImageFileNameA,
-    //
-    //   hProcess,
-    //   procName,
-    //   MAX_PATH
-    // );
 
     if (nameLength == 0) {
         continue;
@@ -71,13 +52,6 @@ DWORD findProcessId(std::string processName) {
 
     // PathFindFileNameA extracts just the filename from a full path
     LPCSTR fileName = PathFindFileNameA(procName);
-    // LPCSTR fileName = (LPCSTR)call(
-    //   hashNtDll,
-    //   hashPathFindFileNameA,
-    //   sysPathFindFileNameA,
-    //
-    //   procName
-    // );
 
     DEBUG_TRACE("Enumerated Handle: %p | Full Path: %s | File Name: %s", hProcess, procName, fileName);
 
