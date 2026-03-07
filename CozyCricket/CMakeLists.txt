@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(CozyCricket LANGUAGES CXX ASM_NASM)
 
-set(CMAKE_EXE_LINKER_FLAGS "-static")
+set(CMAKE_EXE_LINKER_FLAGS "-static -s")
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -34,4 +34,3 @@ target_link_libraries(cozycricket PRIVATE
     psapi
     shlwapi
 )
-
