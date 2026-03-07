@@ -1,3 +1,5 @@
+#ifdef PATCH_ETW_USER
+
 #include <minwindef.h>
 #include <windows.h>
 
@@ -13,3 +15,11 @@ int patch() {
   VirtualProtect(pNtTraceEvent, 1, dwOld, &dwOld);
   return 0;
 }
+
+#elifdef PATCH_ETW_NONE
+
+int patch() {
+  return 0;
+}
+
+#endif
